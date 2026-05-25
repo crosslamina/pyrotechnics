@@ -11,8 +11,7 @@ import type {
   TextObject,
   PathObject,
   BitmapObject,
-  SliceObject,
-  HotspotObject
+  SliceObject
 } from '../types';
 import { 
   renderDocument, 
@@ -445,7 +444,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
     }
 
     // 4. SHAPE / BOX CREATION
-    if (['rect', 'ellipse', 'line', 'arrow', 'slice', 'hotspot'].includes(activeTool)) {
+    if (['rect', 'ellipse', 'line', 'arrow', 'slice'].includes(activeTool)) {
       setEditMode({
         type: 'creating_shape',
         startX: coords.x,
@@ -529,7 +528,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
       } else if (editMode.type === 'idle') {
         if (activeTool === 'text') {
           targetCursor = 'text';
-        } else if (['brush', 'eraser', 'bucket', 'pen', 'rect', 'ellipse', 'line', 'arrow', 'slice', 'hotspot'].includes(activeTool)) {
+        } else if (['brush', 'eraser', 'bucket', 'pen', 'rect', 'ellipse', 'line', 'arrow', 'slice'].includes(activeTool)) {
           targetCursor = 'crosshair';
         } else if (activeTool === 'pointer') {
           let isOverHandle = false;
@@ -595,7 +594,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
       if (handle === 'radius' && init.type === 'rect') {
         const radiusOffset = dx + dy;
         props.rx = Math.max(0, Math.min(Math.min(init.width, init.height) / 2, init.rx + radiusOffset));
-      } else if (init.type === 'rect' || init.type === 'text' || init.type === 'bitmap' || init.type === 'slice' || init.type === 'hotspot') {
+      } else if (init.type === 'rect' || init.type === 'text' || init.type === 'bitmap' || init.type === 'slice') {
         const initBox = init as any;
         const isConstrained = init.type === 'bitmap' && e.shiftKey;
 
@@ -841,7 +840,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
       ctx.lineWidth = 1 / zoom;
       ctx.setLineDash([4 / zoom, 4 / zoom]);
 
-      if (activeTool === 'rect' || activeTool === 'slice' || activeTool === 'hotspot') {
+      if (activeTool === 'rect' || activeTool === 'slice') {
         ctx.strokeRect(startX, startY, curX - startX, curY - startY);
       } else if (activeTool === 'ellipse') {
         ctx.beginPath();
@@ -1022,19 +1021,6 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
           format: 'png',
           quality: 90
         } as SliceObject;
-      } else if (activeTool === 'hotspot') {
-        newObj = {
-          type: 'hotspot',
-          id: newId,
-          x: Math.round(x),
-          y: Math.round(y),
-          width: Math.round(w),
-          height: Math.round(h),
-          shape: 'rect',
-          url: 'https://',
-          target: '_blank',
-          alt: ''
-        } as HotspotObject;
       }
 
       if (newObj) {

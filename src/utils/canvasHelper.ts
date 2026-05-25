@@ -93,7 +93,7 @@ export function renderDocument(
     if (!layer.visible) continue;
 
     for (const obj of layer.objects) {
-      if (obj.type === 'slice' || obj.type === 'hotspot') continue; // Render separately as overlays
+      if (obj.type === 'slice') continue; // Render separately as overlays
       if (editingTextObjectId && obj.id === editingTextObjectId) continue;
       drawObject(ctx, obj, onBitmapLoaded);
     }
@@ -106,7 +106,7 @@ export function renderDocument(
       if (!layer.visible) continue;
 
       for (const obj of layer.objects) {
-        if (obj.type === 'slice' || obj.type === 'hotspot') {
+        if (obj.type === 'slice') {
           drawWebOverlay(ctx, obj, selectedIds.includes(obj.id), zoom);
         }
       }
@@ -336,32 +336,6 @@ function drawWebOverlay(ctx: CanvasRenderingContext2D, obj: CanvasObject, isSele
     ctx.fillText(obj.name, obj.x + 4 / zoom, obj.y - 4 / zoom);
   }
 
-  if (obj.type === 'hotspot') {
-    // Draw semi-transparent cyan hotspot mask
-    ctx.fillStyle = isSelected ? 'rgba(6, 182, 212, 0.3)' : 'rgba(6, 182, 212, 0.15)';
-    ctx.strokeStyle = '#06b6d4';
-    ctx.lineWidth = isSelected ? 2 / zoom : 1 / zoom;
-
-    ctx.beginPath();
-    if (obj.shape === 'circle') {
-      const cx = obj.x + obj.width / 2;
-      const cy = obj.y + obj.height / 2;
-      const r = Math.min(obj.width, obj.height) / 2;
-      ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-    } else {
-      ctx.rect(obj.x, obj.y, obj.width, obj.height);
-    }
-    ctx.fill();
-    ctx.stroke();
-
-    // Hotspot indicator tag
-    ctx.fillStyle = '#06b6d4';
-    ctx.fillRect(obj.x, obj.y - 14 / zoom, 50 / zoom, 14 / zoom);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `${9 / zoom}px var(--font-sans)`;
-    ctx.fillText('Hotspot', obj.x + 4 / zoom, obj.y - 4 / zoom);
-  }
-
   ctx.restore();
 }
 
@@ -457,7 +431,6 @@ export function getBoundingBox(obj: CanvasObject): { x: number; y: number; w: nu
     case 'text':
     case 'bitmap':
     case 'slice':
-    case 'hotspot':
       return { x: obj.x, y: obj.y, w: obj.width, h: obj.height };
 
     case 'ellipse':
@@ -500,8 +473,8 @@ export function hitTestObjects(
   for (let i = objects.length - 1; i >= 0; i--) {
     const obj = objects[i];
     
-    // Ignore slices and hotspots if we are not rendering/focusing on them
-    if ((obj.type === 'slice' || obj.type === 'hotspot') && !showSlices) continue;
+    // Ignore slices if we are not rendering/focusing on them
+    if (obj.type === 'slice' && !showSlices) continue;
 
     const box = getBoundingBox(obj);
     const padding = 6; // Hit test click tolerance

@@ -169,7 +169,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               </select>
             </div>
           )}
-          {obj.type !== 'slice' && obj.type !== 'hotspot' && (
+          {obj.type !== 'slice' && (
             <div className="control-group" style={{ marginLeft: 'auto' }}>
               <button
                 className="btn-secondary"
@@ -415,13 +415,10 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
 
         case 'bitmap':
           return (
-            <div className="properties-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr) auto', gap: '12px', width: '100%' }}>
-              <div className="control-group" style={{ gridColumn: 'span 2' }}>
-                <span className="control-label">Dimensions / Canvas</span>
-                <div className="control-group-row">
-                  {renderBaseProps(true)}
-                </div>
-              </div>
+            <div className="properties-body">
+              {renderBaseProps(true)}
+              
+              <div style={{ width: '1px', height: '24px', background: 'var(--border-light)', margin: '0 8px' }} />
 
               <div className="control-group">
                 <span className="control-label">Blur ({obj.filters.blur}px)</span>
@@ -429,6 +426,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   type="range"
                   min="0"
                   max="15"
+                  style={{ width: '70px' }}
                   value={obj.filters.blur}
                   onChange={(e) => updateSelectedObject({ 
                     filters: { ...obj.filters, blur: Number(e.target.value) } 
@@ -437,11 +435,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
               </div>
 
               <div className="control-group">
-                <span className="control-label">Brightness ({obj.filters.brightness}%)</span>
+                <span className="control-label">Bright ({obj.filters.brightness}%)</span>
                 <input
                   type="range"
                   min="50"
                   max="180"
+                  style={{ width: '70px' }}
                   value={obj.filters.brightness}
                   onChange={(e) => updateSelectedObject({ 
                     filters: { ...obj.filters, brightness: Number(e.target.value) } 
@@ -455,6 +454,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                   type="range"
                   min="50"
                   max="180"
+                  style={{ width: '70px' }}
                   value={obj.filters.contrast}
                   onChange={(e) => updateSelectedObject({ 
                     filters: { ...obj.filters, contrast: Number(e.target.value) } 
@@ -462,9 +462,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 />
               </div>
 
-              <div className="control-group" style={{ gridColumn: '1/3', flexDirection: 'row', gap: '8px' }}>
+              <div style={{ width: '1px', height: '24px', background: 'var(--border-light)', margin: '0 8px' }} />
+
+              <div className="control-group" style={{ flexDirection: 'row', gap: '6px', marginTop: '16px' }}>
                 <button
                   className={`btn-secondary ${obj.filters.grayscale > 0 ? 'active' : ''}`}
+                  style={{ padding: '2px 8px', fontSize: '10px', height: '24px' }}
                   onClick={() => updateSelectedObject({
                     filters: { ...obj.filters, grayscale: obj.filters.grayscale > 0 ? 0 : 100 }
                   })}
@@ -473,6 +476,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 </button>
                 <button
                   className={`btn-secondary ${obj.filters.sepia > 0 ? 'active' : ''}`}
+                  style={{ padding: '2px 8px', fontSize: '10px', height: '24px' }}
                   onClick={() => updateSelectedObject({
                     filters: { ...obj.filters, sepia: obj.filters.sepia > 0 ? 0 : 100 }
                   })}
@@ -525,45 +529,6 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
             </div>
           );
 
-        case 'hotspot':
-          return (
-            <div className="properties-body">
-              {renderBaseProps()}
-              <div className="control-group">
-                <span className="control-label">Target URL (href)</span>
-                <input
-                  type="text"
-                  className="control-input long"
-                  placeholder="https://example.com"
-                  value={obj.url}
-                  onChange={(e) => updateSelectedObject({ url: e.target.value })}
-                />
-              </div>
-
-              <div className="control-group">
-                <span className="control-label">Target</span>
-                <select
-                  className="control-select"
-                  value={obj.target}
-                  onChange={(e) => updateSelectedObject({ target: e.target.value as any })}
-                >
-                  <option value="_self">Same Tab (_self)</option>
-                  <option value="_blank">New Tab (_blank)</option>
-                </select>
-              </div>
-
-              <div className="control-group">
-                <span className="control-label">Alt Text</span>
-                <input
-                  type="text"
-                  className="control-input long"
-                  placeholder="Hover label description"
-                  value={obj.alt}
-                  onChange={(e) => updateSelectedObject({ alt: e.target.value })}
-                />
-              </div>
-            </div>
-          );
       }
     }
 

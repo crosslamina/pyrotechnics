@@ -235,7 +235,6 @@ export default function App() {
       if (key === 'v') setActiveTool('pointer');
       if (key === 'a') setActiveTool('subpointer');
       if (key === 'y') setActiveTool('slice');
-      if (key === 'h') setActiveTool('hotspot');
       if (key === 'p') setActiveTool('pen');
       if (key === 't') setActiveTool('text');
       if (key === 'l') setActiveTool('line');
@@ -328,8 +327,8 @@ export default function App() {
 
     // Draw objects of this layer sequentially
     layer.objects.forEach(obj => {
-      // Skip slices/hotspots
-      if (obj.type === 'slice' || obj.type === 'hotspot') return;
+      // Skip slices
+      if (obj.type === 'slice') return;
       
       offCtx.save();
       offCtx.globalAlpha = obj.opacity / 100;
@@ -430,8 +429,8 @@ export default function App() {
       const dState = dPage.states.find(s => s.id === draft.currentStateId)!;
       const dLayer = dState.layers.find(l => l.id === layerId)!;
 
-      // Keep slices and hotspots, replace others with flattened image
-      const webOverlays = dLayer.objects.filter(o => o.type === 'slice' || o.type === 'hotspot');
+      // Keep slices, replace others with flattened image
+      const webOverlays = dLayer.objects.filter(o => o.type === 'slice');
       dLayer.objects = [flattenedBitmap, ...webOverlays];
     });
 
@@ -474,7 +473,7 @@ export default function App() {
       activeState.layers.forEach(l => {
         if (!l.visible) return;
         l.objects.forEach(obj => {
-          if (obj.type === 'slice' || obj.type === 'hotspot') return;
+          if (obj.type === 'slice') return;
 
           // Simple bounding box intersection check to only include overlapping elements
           const box = getBoundingBox(obj);
@@ -608,7 +607,7 @@ export default function App() {
     activeState.layers.forEach(l => {
       if (!l.visible) return;
       l.objects.forEach(obj => {
-        if (obj.type === 'slice' || obj.type === 'hotspot') return;
+        if (obj.type === 'slice') return;
         
         // Custom simple canvas drawing
         sCtx.save();
@@ -743,104 +742,7 @@ export default function App() {
     });
   };
 
-  // Generate and export absolute-positioned HTML & Hotspots Layout
-  const handleExportHTML = () => {
-    if (!activeState || !activePage) return;
 
-    // Get slices and hotspots
-    const slices: any[] = [];
-    const hotspots: any[] = [];
-
-    activeState.layers.forEach(l => {
-      l.objects.forEach(o => {
-        if (o.type === 'slice') slices.push(o);
-        if (o.type === 'hotspot') hotspots.push(o);
-      });
-    });
-
-    // Generate HTML markup
-    let htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${doc.name || 'Pyrotechnic Export'}</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #0f172a; /* Slate dark bg */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    .web-container {
-      position: relative;
-      width: ${activePage.width}px;
-      height: ${activePage.height}px;
-      background-color: #ffffff;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      overflow: hidden;
-    }
-    .exported-slice {
-      position: absolute;
-      border: none;
-      display: block;
-    }
-    .exported-hotspot {
-      position: absolute;
-      display: block;
-      z-index: 100;
-      text-decoration: none;
-    }
-    .exported-hotspot:hover {
-      background-color: rgba(6, 182, 212, 0.15); /* Subtle highlight on hover */
-    }
-  </style>
-</head>
-<body>
-
-  <div class="web-container">
-`;
-
-    // Render slices
-    slices.forEach(slice => {
-      const fileName = `${slice.name || 'slice'}.${slice.format}`;
-      htmlContent += `    <img 
-      src="${fileName}" 
-      alt="${slice.name}" 
-      class="exported-slice" 
-      style="left: ${slice.x}px; top: ${slice.y}px; width: ${slice.width}px; height: ${slice.height}px;"
-    />\n`;
-    });
-
-    // Render hotspots
-    hotspots.forEach(hs => {
-      htmlContent += `    <a 
-      href="${hs.url}" 
-      target="${hs.target}" 
-      title="${hs.alt || ''}" 
-      class="exported-hotspot" 
-      style="left: ${hs.x}px; top: ${hs.y}px; width: ${hs.width}px; height: ${hs.height}px;"
-    ></a>\n`;
-    });
-
-    htmlContent += `  </div>
-
-</body>
-</html>`;
-
-    // Trigger download of index.html
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = 'index.html';
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
 
   // Create slice object exactly matching selected object bounds
   const handleCreateSliceFromSelection = () => {
@@ -1166,7 +1068,6 @@ export default function App() {
           setIsPlayingAnimation={setIsPlayingAnimation}
           onExportSlice={handleExportSlice}
           onExportAllSlices={handleExportAllSlices}
-          onExportHTML={handleExportHTML}
           onFlattenLayer={handleFlattenLayer}
           showSlicesOverlay={showSlicesOverlay}
           setShowSlicesOverlay={setShowSlicesOverlay}

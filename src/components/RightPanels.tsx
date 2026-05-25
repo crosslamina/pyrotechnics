@@ -34,7 +34,6 @@ interface RightPanelsProps {
   setIsPlayingAnimation: (playing: boolean) => void;
   onExportSlice: (sliceId: string) => void;
   onExportAllSlices: () => void;
-  onExportHTML: () => void;
   onFlattenLayer: (layerId: string) => void;
   showSlicesOverlay: boolean;
   setShowSlicesOverlay: (show: boolean) => void;
@@ -55,7 +54,6 @@ export const RightPanels: React.FC<RightPanelsProps> = ({
   setIsPlayingAnimation,
   onExportSlice,
   onExportAllSlices,
-  onExportHTML,
   onFlattenLayer,
   showSlicesOverlay,
   setShowSlicesOverlay,
@@ -580,14 +578,6 @@ export const RightPanels: React.FC<RightPanelsProps> = ({
                     onClick={onExportAllSlices}
                   >
                     <Download size={13} /> Export All Slices
-                  </button>
-                  <button 
-                    className="btn-secondary" 
-                    style={{ width: '100%', justifyContent: 'center', borderColor: 'var(--accent-green)' }}
-                    onClick={onExportHTML}
-                    title="Export CSS-positioned HTML layout for slices and hotspots"
-                  >
-                    <Code size={13} style={{ color: 'var(--accent-green)' }} /> Export HTML Layout
                   </button>
                 </div>
               )}

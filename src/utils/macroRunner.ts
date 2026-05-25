@@ -21,8 +21,7 @@ export type MacroCommand =
   | AddEllipseCommand
   | AddLineCommand
   | AddTextCommand
-  | AddSliceCommand
-  | AddHotspotCommand;
+  | AddSliceCommand;
 
 export interface SetCanvasCommand {
   command: 'set_canvas';
@@ -121,17 +120,7 @@ export interface AddSliceCommand {
   quality?: number;                 // 0–100, default 90
 }
 
-export interface AddHotspotCommand {
-  command: 'add_hotspot';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  url: string;
-  shape?: 'rect' | 'circle'; // default "rect"
-  target?: '_self' | '_blank'; // default "_blank"
-  alt?: string;
-}
+
 
 export interface PyrotechnicMacro {
   /** Schema version - must be "1.0" */
@@ -335,23 +324,7 @@ export function runMacro(macro: PyrotechnicMacro, doc: Document): Document {
         break;
       }
 
-      // ── ADD HOTSPOT ─────────────────────────────
-      case 'add_hotspot': {
-        const obj: CanvasObject = {
-          type: 'hotspot',
-          id: makeId('hotspot'),
-          x: Math.round(cmd.x),
-          y: Math.round(cmd.y),
-          width: Math.max(1, Math.round(cmd.width)),
-          height: Math.max(1, Math.round(cmd.height)),
-          shape: cmd.shape ?? 'rect',
-          url: cmd.url,
-          target: cmd.target ?? '_blank',
-          alt: cmd.alt ?? '',
-        };
-        layer.objects.push(obj);
-        break;
-      }
+
 
       default: {
         // Unknown command – skip silently (forward-compatible)

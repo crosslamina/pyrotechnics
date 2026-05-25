@@ -132,19 +132,6 @@ export type SliceObject = {
   quality: number; // 0-100
 };
 
-export type HotspotObject = {
-  type: 'hotspot';
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  shape: 'rect' | 'circle';
-  url: string;
-  target: '_self' | '_blank';
-  alt: string;
-};
-
 export type CanvasObject =
   | RectObject
   | EllipseObject
@@ -152,8 +139,7 @@ export type CanvasObject =
   | PathObject
   | TextObject
   | BitmapObject
-  | SliceObject
-  | HotspotObject;
+  | SliceObject;
 
 export type Layer = {
   id: string;
@@ -197,8 +183,7 @@ export type ToolType =
   | 'brush'
   | 'eraser'
   | 'bucket'
-  | 'slice'
-  | 'hotspot';
+  | 'slice';
 
 export type TransformHandle =
   | 'tl' | 'tr' | 'bl' | 'br' // Corners
