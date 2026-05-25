@@ -19,7 +19,8 @@ import {
   hitTestObjects, 
   checkTransformHandles, 
   getBoundingBox, 
-  getOrCreateBitmapCanvas 
+  getOrCreateBitmapCanvas,
+  drawArrowhead
 } from '../utils/canvasHelper';
 
 interface CanvasAreaProps {
@@ -444,7 +445,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
     }
 
     // 4. SHAPE / BOX CREATION
-    if (['rect', 'ellipse', 'line', 'slice', 'hotspot'].includes(activeTool)) {
+    if (['rect', 'ellipse', 'line', 'arrow', 'slice', 'hotspot'].includes(activeTool)) {
       setEditMode({
         type: 'creating_shape',
         startX: coords.x,
@@ -528,7 +529,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
       } else if (editMode.type === 'idle') {
         if (activeTool === 'text') {
           targetCursor = 'text';
-        } else if (['brush', 'eraser', 'bucket', 'pen', 'rect', 'ellipse', 'line', 'slice', 'hotspot'].includes(activeTool)) {
+        } else if (['brush', 'eraser', 'bucket', 'pen', 'rect', 'ellipse', 'line', 'arrow', 'slice', 'hotspot'].includes(activeTool)) {
           targetCursor = 'crosshair';
         } else if (activeTool === 'pointer') {
           let isOverHandle = false;
@@ -848,11 +849,32 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         const ry = Math.abs(curY - startY) / 2;
         ctx.ellipse(startX + (curX - startX) / 2, startY + (curY - startY) / 2, rx, ry, 0, 0, 2 * Math.PI);
         ctx.stroke();
-      } else if (activeTool === 'line') {
+      } else if (activeTool === 'line' || activeTool === 'arrow') {
+        const dx = curX - startX;
+        const dy = curY - startY;
+        const L = Math.sqrt(dx * dx + dy * dy);
+        let drawEndX = curX;
+        let drawEndY = curY;
+
+        if (activeTool === 'arrow' && L > 0) {
+          const ux = dx / L;
+          const uy = dy / L;
+          const arrowWidthAngle = Math.PI / 6;
+          const arrowLength = Math.max(10, 2 * 4); // Default preview stroke width is 2
+          const arrowHeight = arrowLength * Math.cos(arrowWidthAngle);
+          const shorten = Math.min(L, arrowHeight);
+          drawEndX = curX - ux * shorten;
+          drawEndY = curY - uy * shorten;
+        }
+
         ctx.beginPath();
         ctx.moveTo(startX, startY);
-        ctx.lineTo(curX, curY);
+        ctx.lineTo(drawEndX, drawEndY);
         ctx.stroke();
+
+        if (activeTool === 'arrow') {
+          drawArrowhead(ctx, startX, startY, curX, curY, 2, strokeColor === 'none' ? '#3b82f6' : strokeColor);
+        }
       }
 
       ctx.restore();
@@ -970,7 +992,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
           shadowOffsetY: 0,
           blendMode: 'source-over'
         } as EllipseObject;
-      } else if (activeTool === 'line') {
+      } else if (activeTool === 'line' || activeTool === 'arrow') {
         newObj = {
           type: 'line',
           id: newId,
@@ -985,7 +1007,8 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
           shadowBlur: 0,
           shadowOffsetX: 0,
           shadowOffsetY: 0,
-          blendMode: 'source-over'
+          blendMode: 'source-over',
+          arrowEnd: activeTool === 'arrow' ? true : undefined
         } as LineObject;
       } else if (activeTool === 'slice') {
         newObj = {
@@ -1031,7 +1054,6 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
         });
 
         setSelectedObjectIds([newId]);
-        setActiveTool('pointer');
       }
 
       setEditMode({ type: 'idle' });
@@ -1077,7 +1099,6 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
 
       setTempPoints([]);
       setSelectedObjectIds([pathId]);
-      setActiveTool('pointer');
     } else if (activeTool === 'pointer' && selectedObjectIds.length === 1) {
       const selObj = getActiveObjects(doc).find(o => o.id === selectedObjectIds[0]);
       if (selObj && selObj.type === 'text') {
@@ -1124,7 +1145,6 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
 
         setTempPoints([]);
         setSelectedObjectIds([pathId]);
-        setActiveTool('pointer');
       }
     };
 

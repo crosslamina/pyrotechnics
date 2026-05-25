@@ -194,10 +194,51 @@ function drawObject(ctx: CanvasRenderingContext2D, obj: CanvasObject, onBitmapLo
       ctx.lineWidth = obj.strokeWidth;
       ctx.lineCap = 'round';
 
+      // Shorten the drawn line segment to prevent cap protrusion under thick strokes
+      const dx = obj.x2 - obj.x1;
+      const dy = obj.y2 - obj.y1;
+      const L = Math.sqrt(dx * dx + dy * dy);
+
+      let x1Line = obj.x1;
+      let y1Line = obj.y1;
+      let x2Line = obj.x2;
+      let y2Line = obj.y2;
+
+      if (L > 0) {
+        const ux = dx / L;
+        const uy = dy / L;
+
+        const arrowWidthAngle = Math.PI / 6; // 30 degrees
+        const arrowLength = Math.max(10, obj.strokeWidth * 4);
+        const arrowHeight = arrowLength * Math.cos(arrowWidthAngle);
+
+        let startShorten = obj.arrowStart ? arrowHeight : 0;
+        let endShorten = obj.arrowEnd ? arrowHeight : 0;
+
+        // Clamp shortening values to avoid line inversion on short lines
+        if (startShorten + endShorten > L) {
+          const ratio = L / (startShorten + endShorten);
+          startShorten *= ratio;
+          endShorten *= ratio;
+        }
+
+        x1Line = obj.x1 + ux * startShorten;
+        y1Line = obj.y1 + uy * startShorten;
+        x2Line = obj.x2 - ux * endShorten;
+        y2Line = obj.y2 - uy * endShorten;
+      }
+
       ctx.beginPath();
-      ctx.moveTo(obj.x1, obj.y1);
-      ctx.lineTo(obj.x2, obj.y2);
+      ctx.moveTo(x1Line, y1Line);
+      ctx.lineTo(x2Line, y2Line);
       ctx.stroke();
+
+      if (obj.arrowStart) {
+        drawArrowhead(ctx, obj.x2, obj.y2, obj.x1, obj.y1, obj.strokeWidth, obj.stroke);
+      }
+      if (obj.arrowEnd) {
+        drawArrowhead(ctx, obj.x1, obj.y1, obj.x2, obj.y2, obj.strokeWidth, obj.stroke);
+      }
       break;
     }
 
@@ -557,4 +598,39 @@ export function generateCSS(obj: CanvasObject): string {
   }
 
   return css;
+}
+
+/**
+ * Draws a filled arrowhead pointing towards (toX, toY)
+ */
+export function drawArrowhead(
+  ctx: CanvasRenderingContext2D,
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+  strokeWidth: number,
+  color: string
+) {
+  const angle = Math.atan2(toY - fromY, toX - fromX);
+  const arrowLength = Math.max(10, strokeWidth * 4);
+  const arrowWidthAngle = Math.PI / 6; // 30 degrees
+
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = strokeWidth;
+
+  const xLeft = toX - arrowLength * Math.cos(angle - arrowWidthAngle);
+  const yLeft = toY - arrowLength * Math.sin(angle - arrowWidthAngle);
+  const xRight = toX - arrowLength * Math.cos(angle + arrowWidthAngle);
+  const yRight = toY - arrowLength * Math.sin(angle + arrowWidthAngle);
+
+  ctx.beginPath();
+  ctx.moveTo(toX, toY);
+  ctx.lineTo(xLeft, yLeft);
+  ctx.lineTo(xRight, yRight);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 }

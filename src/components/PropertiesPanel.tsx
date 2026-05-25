@@ -252,6 +252,30 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                       onChange={(e) => updateSelectedObject({ strokeWidth: Math.max(0, Number(e.target.value)) })}
                     />
                   </div>
+                  {obj.type === 'line' && (
+                    <>
+                      <div className="control-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
+                          <input
+                            type="checkbox"
+                            checked={!!(obj as any).arrowStart}
+                            onChange={(e) => updateSelectedObject({ arrowStart: e.target.checked })}
+                          />
+                          Start Arrow
+                        </label>
+                      </div>
+                      <div className="control-group" style={{ flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }}>
+                          <input
+                            type="checkbox"
+                            checked={!!(obj as any).arrowEnd}
+                            onChange={(e) => updateSelectedObject({ arrowEnd: e.target.checked })}
+                          />
+                          End Arrow
+                        </label>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 

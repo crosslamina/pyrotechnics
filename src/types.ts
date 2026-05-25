@@ -59,6 +59,8 @@ export type LineObject = {
   shadowOffsetX: number;
   shadowOffsetY: number;
   blendMode: string;
+  arrowStart?: boolean;
+  arrowEnd?: boolean;
 };
 
 export type PathObject = {
@@ -189,6 +191,7 @@ export type ToolType =
   | 'rect'
   | 'ellipse'
   | 'line'
+  | 'arrow'
   | 'text'
   | 'pen'
   | 'brush'

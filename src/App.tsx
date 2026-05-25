@@ -11,7 +11,7 @@ import { Toolbar } from './components/Toolbar';
 import { CanvasArea } from './components/CanvasArea';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { RightPanels } from './components/RightPanels';
-import { getOrCreateBitmapCanvas, getBoundingBox } from './utils/canvasHelper';
+import { getOrCreateBitmapCanvas, getBoundingBox, drawArrowhead } from './utils/canvasHelper';
 import { parseMacro, runMacro } from './utils/macroRunner';
 
 // Define initial empty document setup
@@ -239,6 +239,7 @@ export default function App() {
       if (key === 'p') setActiveTool('pen');
       if (key === 't') setActiveTool('text');
       if (key === 'l') setActiveTool('line');
+      if (key === 'w') setActiveTool('arrow');
       if (key === 'u') setActiveTool('rect');
       if (key === 'o') setActiveTool('ellipse');
       if (key === 'b') setActiveTool('brush');
@@ -354,10 +355,48 @@ export default function App() {
       } else if (obj.type === 'line') {
         offCtx.strokeStyle = obj.stroke;
         offCtx.lineWidth = obj.strokeWidth;
+        offCtx.lineCap = 'round';
+
+        const dx = obj.x2 - obj.x1;
+        const dy = obj.y2 - obj.y1;
+        const L = Math.sqrt(dx * dx + dy * dy);
+        let x1Line = obj.x1;
+        let y1Line = obj.y1;
+        let x2Line = obj.x2;
+        let y2Line = obj.y2;
+
+        if (L > 0) {
+          const ux = dx / L;
+          const uy = dy / L;
+          const arrowWidthAngle = Math.PI / 6;
+          const arrowLength = Math.max(10, obj.strokeWidth * 4);
+          const arrowHeight = arrowLength * Math.cos(arrowWidthAngle);
+          let startShorten = obj.arrowStart ? arrowHeight : 0;
+          let endShorten = obj.arrowEnd ? arrowHeight : 0;
+
+          if (startShorten + endShorten > L) {
+            const ratio = L / (startShorten + endShorten);
+            startShorten *= ratio;
+            endShorten *= ratio;
+          }
+
+          x1Line = obj.x1 + ux * startShorten;
+          y1Line = obj.y1 + uy * startShorten;
+          x2Line = obj.x2 - ux * endShorten;
+          y2Line = obj.y2 - uy * endShorten;
+        }
+
         offCtx.beginPath();
-        offCtx.moveTo(obj.x1, obj.y1);
-        offCtx.lineTo(obj.x2, obj.y2);
+        offCtx.moveTo(x1Line, y1Line);
+        offCtx.lineTo(x2Line, y2Line);
         offCtx.stroke();
+
+        if (obj.arrowStart) {
+          drawArrowhead(offCtx, obj.x2, obj.y2, obj.x1, obj.y1, obj.strokeWidth, obj.stroke);
+        }
+        if (obj.arrowEnd) {
+          drawArrowhead(offCtx, obj.x1, obj.y1, obj.x2, obj.y2, obj.strokeWidth, obj.stroke);
+        }
       } else if (obj.type === 'text') {
         offCtx.fillStyle = obj.fill;
         offCtx.font = `${obj.fontStyle} ${obj.fontWeight} ${obj.fontSize}px ${obj.fontFamily}`;
@@ -460,7 +499,54 @@ export default function App() {
             const strokeAttr = obj.strokeWidth > 0 ? ` stroke="${obj.stroke}" stroke-width="${obj.strokeWidth}"` : '';
             svgContent += `  <ellipse cx="${obj.cx + dx}" cy="${obj.cy + dy}" rx="${obj.rx}" ry="${obj.ry}" fill="${fillAttr}"${strokeAttr}${opacityAttr} />\n`;
           } else if (obj.type === 'line') {
-            svgContent += `  <line x1="${obj.x1 + dx}" y1="${obj.y1 + dy}" x2="${obj.x2 + dx}" y2="${obj.y2 + dy}" stroke="${obj.stroke}" stroke-width="${obj.strokeWidth}" stroke-linecap="round"${opacityAttr} />\n`;
+            const ldx = obj.x2 - obj.x1;
+            const ldy = obj.y2 - obj.y1;
+            const L = Math.sqrt(ldx * ldx + ldy * ldy);
+            let x1Line = obj.x1;
+            let y1Line = obj.y1;
+            let x2Line = obj.x2;
+            let y2Line = obj.y2;
+
+            const arrowWidthAngle = Math.PI / 6;
+            const arrowLength = Math.max(10, obj.strokeWidth * 4);
+            const arrowHeight = arrowLength * Math.cos(arrowWidthAngle);
+
+            if (L > 0) {
+              const ux = ldx / L;
+              const uy = ldy / L;
+              let startShorten = obj.arrowStart ? arrowHeight : 0;
+              let endShorten = obj.arrowEnd ? arrowHeight : 0;
+
+              if (startShorten + endShorten > L) {
+                const ratio = L / (startShorten + endShorten);
+                startShorten *= ratio;
+                endShorten *= ratio;
+              }
+
+              x1Line = obj.x1 + ux * startShorten;
+              y1Line = obj.y1 + uy * startShorten;
+              x2Line = obj.x2 - ux * endShorten;
+              y2Line = obj.y2 - uy * endShorten;
+            }
+
+            svgContent += `  <line x1="${x1Line + dx}" y1="${y1Line + dy}" x2="${x2Line + dx}" y2="${y2Line + dy}" stroke="${obj.stroke}" stroke-width="${obj.strokeWidth}" stroke-linecap="round"${opacityAttr} />\n`;
+
+            if (obj.arrowStart && L > 0) {
+              const angle = Math.atan2(obj.y1 - obj.y2, obj.x1 - obj.x2);
+              const xLeft = (obj.x1 + dx) - arrowLength * Math.cos(angle - arrowWidthAngle);
+              const yLeft = (obj.y1 + dy) - arrowLength * Math.sin(angle - arrowWidthAngle);
+              const xRight = (obj.x1 + dx) - arrowLength * Math.cos(angle + arrowWidthAngle);
+              const yRight = (obj.y1 + dy) - arrowLength * Math.sin(angle + arrowWidthAngle);
+              svgContent += `  <polygon points="${obj.x1 + dx},${obj.y1 + dy} ${xLeft},${yLeft} ${xRight},${yRight}" fill="${obj.stroke}"${opacityAttr} />\n`;
+            }
+            if (obj.arrowEnd && L > 0) {
+              const angle = Math.atan2(obj.y2 - obj.y1, obj.x2 - obj.x1);
+              const xLeft = (obj.x2 + dx) - arrowLength * Math.cos(angle - arrowWidthAngle);
+              const yLeft = (obj.y2 + dy) - arrowLength * Math.sin(angle - arrowWidthAngle);
+              const xRight = (obj.x2 + dx) - arrowLength * Math.cos(angle + arrowWidthAngle);
+              const yRight = (obj.y2 + dy) - arrowLength * Math.sin(angle + arrowWidthAngle);
+              svgContent += `  <polygon points="${obj.x2 + dx},${obj.y2 + dy} ${xLeft},${yLeft} ${xRight},${yRight}" fill="${obj.stroke}"${opacityAttr} />\n`;
+            }
           } else if (obj.type === 'path') {
             if (obj.points.length >= 2) {
               let d = `M ${obj.points[0].x + dx} ${obj.points[0].y + dy}`;
@@ -548,10 +634,48 @@ export default function App() {
         } else if (obj.type === 'line') {
           sCtx.strokeStyle = obj.stroke;
           sCtx.lineWidth = obj.strokeWidth;
+          sCtx.lineCap = 'round';
+
+          const dx = obj.x2 - obj.x1;
+          const dy = obj.y2 - obj.y1;
+          const L = Math.sqrt(dx * dx + dy * dy);
+          let x1Line = obj.x1;
+          let y1Line = obj.y1;
+          let x2Line = obj.x2;
+          let y2Line = obj.y2;
+
+          if (L > 0) {
+            const ux = dx / L;
+            const uy = dy / L;
+            const arrowWidthAngle = Math.PI / 6;
+            const arrowLength = Math.max(10, obj.strokeWidth * 4);
+            const arrowHeight = arrowLength * Math.cos(arrowWidthAngle);
+            let startShorten = obj.arrowStart ? arrowHeight : 0;
+            let endShorten = obj.arrowEnd ? arrowHeight : 0;
+
+            if (startShorten + endShorten > L) {
+              const ratio = L / (startShorten + endShorten);
+              startShorten *= ratio;
+              endShorten *= ratio;
+            }
+
+            x1Line = obj.x1 + ux * startShorten;
+            y1Line = obj.y1 + uy * startShorten;
+            x2Line = obj.x2 - ux * endShorten;
+            y2Line = obj.y2 - uy * endShorten;
+          }
+
           sCtx.beginPath();
-          sCtx.moveTo(obj.x1, obj.y1);
-          sCtx.lineTo(obj.x2, obj.y2);
+          sCtx.moveTo(x1Line, y1Line);
+          sCtx.lineTo(x2Line, y2Line);
           sCtx.stroke();
+
+          if (obj.arrowStart) {
+            drawArrowhead(sCtx, obj.x2, obj.y2, obj.x1, obj.y1, obj.strokeWidth, obj.stroke);
+          }
+          if (obj.arrowEnd) {
+            drawArrowhead(sCtx, obj.x1, obj.y1, obj.x2, obj.y2, obj.strokeWidth, obj.stroke);
+          }
         } else if (obj.type === 'text') {
           sCtx.fillStyle = obj.fill;
           sCtx.font = `${obj.fontStyle} ${obj.fontWeight} ${obj.fontSize}px ${obj.fontFamily}`;

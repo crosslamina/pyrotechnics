@@ -85,6 +85,8 @@ export interface AddLineCommand {
   strokeWidth?: number;
   opacity?: number;
   blendMode?: string;
+  arrowStart?: boolean;
+  arrowEnd?: boolean;
 }
 
 export interface AddTextCommand {
@@ -282,6 +284,8 @@ export function runMacro(macro: PyrotechnicMacro, doc: Document): Document {
           shadowBlur: 0,
           shadowOffsetX: 0,
           shadowOffsetY: 0,
+          arrowStart: cmd.arrowStart,
+          arrowEnd: cmd.arrowEnd,
         };
         layer.objects.push(obj);
         break;
