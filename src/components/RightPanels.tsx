@@ -18,7 +18,8 @@ import {
   Terminal,
   CheckCircle,
   XCircle,
-  Info
+  Info,
+  Upload
 } from 'lucide-react';
 import type { Document, Page, State, Layer, CanvasObject } from '../types';
 import { generateCSS } from '../utils/canvasHelper';
@@ -615,7 +616,7 @@ export const RightPanels: React.FC<RightPanelsProps> = ({
         </div>
         {!collapsed.macro && (
           <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <MacroPanel onRunMacro={onRunMacro} />
+            <MacroPanel onRunMacro={onRunMacro} document={doc} />
           </div>
         )}
       </div>
@@ -624,15 +625,126 @@ export const RightPanels: React.FC<RightPanelsProps> = ({
   );
 };
 
+
+// ─────────────────────────────────────────────────────────
+// Macro export: convert Document state → JSON macro commands
+// ─────────────────────────────────────────────────────────
+
+function documentToMacro(doc: Document): object {
+  const page = doc.pages.find(p => p.id === doc.currentPageId) || doc.pages[0];
+  const isMultiState = page.states.length > 1;
+  const commands: object[] = [];
+
+  // 1. Set canvas size
+  commands.push({ command: 'set_canvas', width: page.width, height: page.height, name: page.name });
+  commands.push({ command: 'clear_canvas' });
+
+  // Helper: convert a single CanvasObject to one or more macro commands
+  function objToCommands(obj: CanvasObject): object[] {
+    switch (obj.type) {
+      case 'rect': {
+        const cmd: Record<string, unknown> = {
+          command: 'add_rect',
+          x: obj.x, y: obj.y, width: obj.width, height: obj.height,
+        };
+        if (obj.fill && obj.fill !== 'none') cmd.fill = obj.fill;
+        if (obj.stroke && obj.stroke !== 'none') { cmd.stroke = obj.stroke; cmd.strokeWidth = obj.strokeWidth; }
+        if (obj.rx) cmd.rx = obj.rx;
+        if (obj.opacity !== 100) cmd.opacity = obj.opacity;
+        if (obj.blendMode && obj.blendMode !== 'source-over') cmd.blendMode = obj.blendMode;
+        if (obj.shadowBlur) { cmd.shadowColor = obj.shadowColor; cmd.shadowBlur = obj.shadowBlur; cmd.shadowOffsetX = obj.shadowOffsetX; cmd.shadowOffsetY = obj.shadowOffsetY; }
+        return [cmd];
+      }
+      case 'ellipse': {
+        const cmd: Record<string, unknown> = {
+          command: 'add_ellipse',
+          cx: obj.cx, cy: obj.cy, rx: obj.rx, ry: obj.ry,
+        };
+        if (obj.fill && obj.fill !== 'none') cmd.fill = obj.fill;
+        if (obj.stroke && obj.stroke !== 'none') { cmd.stroke = obj.stroke; cmd.strokeWidth = obj.strokeWidth; }
+        if (obj.opacity !== 100) cmd.opacity = obj.opacity;
+        if (obj.blendMode && obj.blendMode !== 'source-over') cmd.blendMode = obj.blendMode;
+        if (obj.shadowBlur) { cmd.shadowColor = obj.shadowColor; cmd.shadowBlur = obj.shadowBlur; cmd.shadowOffsetX = obj.shadowOffsetX; cmd.shadowOffsetY = obj.shadowOffsetY; }
+        return [cmd];
+      }
+      case 'line': {
+        const cmd: Record<string, unknown> = {
+          command: 'add_line',
+          x1: obj.x1, y1: obj.y1, x2: obj.x2, y2: obj.y2,
+          stroke: obj.stroke, strokeWidth: obj.strokeWidth,
+        };
+        if (obj.opacity !== 100) cmd.opacity = obj.opacity;
+        if (obj.blendMode && obj.blendMode !== 'source-over') cmd.blendMode = obj.blendMode;
+        return [cmd];
+      }
+      case 'text': {
+        const cmd: Record<string, unknown> = {
+          command: 'add_text',
+          x: obj.x, y: obj.y, width: obj.width, height: obj.height,
+          text: obj.text, fontSize: obj.fontSize,
+        };
+        if (obj.fontFamily && obj.fontFamily !== 'Outfit') cmd.fontFamily = obj.fontFamily;
+        if (obj.fontWeight !== 'normal') cmd.fontWeight = obj.fontWeight;
+        if (obj.fontStyle !== 'normal') cmd.fontStyle = obj.fontStyle;
+        if (obj.fill) cmd.fill = obj.fill;
+        if (obj.textAlign !== 'left') cmd.textAlign = obj.textAlign;
+        if (obj.opacity !== 100) cmd.opacity = obj.opacity;
+        if (obj.shadowBlur) { cmd.shadowColor = obj.shadowColor; cmd.shadowBlur = obj.shadowBlur; cmd.shadowOffsetX = obj.shadowOffsetX; cmd.shadowOffsetY = obj.shadowOffsetY; }
+        return [cmd];
+      }
+      case 'slice': {
+        const cmd: Record<string, unknown> = {
+          command: 'add_slice',
+          x: obj.x, y: obj.y, width: obj.width, height: obj.height,
+          name: obj.name, format: obj.format,
+        };
+        if (obj.quality !== 90) cmd.quality = obj.quality;
+        return [cmd];
+      }
+      // bitmap and path are not representable in macro format
+      default:
+        return [];
+    }
+  }
+
+  // 2. Emit states / layers / objects
+  page.states.forEach((state, stateIdx) => {
+    if (isMultiState && stateIdx > 0) {
+      // Insert add_state command for frames 2+
+      commands.push({ command: 'add_state', name: state.name, delay: state.delay });
+    } else if (isMultiState && stateIdx === 0 && state.delay !== 100) {
+      // First state delay customisation is stored separately (runner reads it from first state)
+    }
+
+    // Layers are drawn bottom-to-top; in the document they are stored top-to-bottom (index 0 = top).
+    // Reverse so we emit background layers first.
+    const orderedLayers = [...state.layers].reverse();
+    orderedLayers.forEach(layer => {
+      if (!layer.visible) return; // skip hidden layers
+      layer.objects.forEach(obj => {
+        objToCommands(obj).forEach(cmd => commands.push(cmd));
+      });
+    });
+  });
+
+  return {
+    schema: '1.0',
+    title: page.name,
+    description: `Exported from Pyrotechnic — ${new Date().toISOString().slice(0, 10)}`,
+    commands,
+  };
+}
+
 // ─────────────────────────────────────────────────────────
 // MacroPanel sub-component
 // ─────────────────────────────────────────────────────────
 
 interface MacroPanelProps {
   onRunMacro: (json: string) => { success: boolean; message: string };
+  document: Document;
 }
 
-const MacroPanel: React.FC<MacroPanelProps> = ({ onRunMacro }) => {
+const MacroPanel: React.FC<MacroPanelProps> = ({ onRunMacro, document: doc }) => {
   const [macroText, setMacroText] = useState('');
   const [status, setStatus] = useState<{ success: boolean; message: string; info?: boolean } | null>(null);
 
@@ -1826,10 +1938,87 @@ const MacroPanel: React.FC<MacroPanelProps> = ({ onRunMacro }) => {
     setStatus(null);
   };
 
+  // ── Export current canvas as macro ────────────────────
+  const handleExportMacro = () => {
+    try {
+      const macro = documentToMacro(doc);
+      const json = JSON.stringify(macro, null, 2);
+      setMacroText(json);
+      setStatus({ success: true, message: 'キャンバスをマクロに変換しました。テキストエリアを確認してください。' });
+    } catch (e) {
+      setStatus({ success: false, message: `書き出しエラー: ${(e as Error).message}` });
+    }
+  };
+
+  const handleDownloadMacro = () => {
+    try {
+      const macro = documentToMacro(doc);
+      const json = JSON.stringify(macro, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = window.document.createElement('a');
+      const page = doc.pages.find(p => p.id === doc.currentPageId) || doc.pages[0];
+      a.href = url;
+      a.download = `${page.name.replace(/\s+/g, '_').toLowerCase() || 'macro'}_macro.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus({ success: true, message: 'マクロをダウンロードしました。' });
+    } catch (e) {
+      setStatus({ success: false, message: `ダウンロードエラー: ${(e as Error).message}` });
+    }
+  };
+
   return (
     <>
       <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
         外部AI（ChatGPT・Claude・Gemini等）が生成したJSONマクロをここに貼り付けて実行します。
+      </div>
+
+      {/* ── Macro Export buttons ── */}
+      <div style={{
+        display: 'flex', gap: 4,
+        padding: '8px 10px',
+        background: 'rgba(234,179,8,0.06)',
+        border: '1px solid rgba(234,179,8,0.2)',
+        borderRadius: 6,
+      }}>
+        <span style={{ fontSize: '10px', color: 'var(--accent-gold)', flex: 1, alignSelf: 'center', fontWeight: 600 }}>
+          📤 キャンバス → マクロ
+        </span>
+        <button
+          onClick={handleExportMacro}
+          style={{
+            background: 'rgba(234,179,8,0.15)',
+            border: '1px solid rgba(234,179,8,0.4)',
+            color: '#fbbf24',
+            borderRadius: 4,
+            padding: '4px 8px',
+            fontSize: '10px',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 3,
+            fontWeight: 600,
+          }}
+          title="現在のキャンバスをJSONマクロに変換してテキストエリアに展開"
+        >
+          <Upload size={11} /> 展開
+        </button>
+        <button
+          onClick={handleDownloadMacro}
+          style={{
+            background: 'rgba(234,179,8,0.15)',
+            border: '1px solid rgba(234,179,8,0.4)',
+            color: '#fbbf24',
+            borderRadius: 4,
+            padding: '4px 8px',
+            fontSize: '10px',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 3,
+            fontWeight: 600,
+          }}
+          title="JSONマクロファイルとしてダウンロード"
+        >
+          <Download size={11} /> 保存
+        </button>
       </div>
 
       <div style={{ display: 'flex', gap: 6 }}>
