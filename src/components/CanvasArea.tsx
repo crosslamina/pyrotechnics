@@ -676,15 +676,86 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
           }
         }
       } else if (init.type === 'ellipse') {
-        if (handle === 'r') props.rx = Math.max(2, init.rx + dx / 2);
-        if (handle === 'b') props.ry = Math.max(2, init.ry + dy / 2);
-        if (handle === 'br') {
-          props.rx = Math.max(2, init.rx + dx / 2);
-          props.ry = Math.max(2, init.ry + dy / 2);
+        const left = init.cx - init.rx;
+        const right = init.cx + init.rx;
+        const top = init.cy - init.ry;
+        const bottom = init.cy + init.ry;
+
+        // X-axis adjustments
+        if (handle === 'r' || handle === 'tr' || handle === 'br') {
+          const newRight = Math.max(left + 4, right + dx);
+          props.rx = (newRight - left) / 2;
+          props.cx = left + props.rx;
+        } else if (handle === 'l' || handle === 'tl' || handle === 'bl') {
+          const newLeft = Math.min(right - 4, left + dx);
+          props.rx = (right - newLeft) / 2;
+          props.cx = newLeft + props.rx;
+        }
+
+        // Y-axis adjustments
+        if (handle === 'b' || handle === 'bl' || handle === 'br') {
+          const newBottom = Math.max(top + 4, bottom + dy);
+          props.ry = (newBottom - top) / 2;
+          props.cy = top + props.ry;
+        } else if (handle === 't' || handle === 'tl' || handle === 'tr') {
+          const newTop = Math.min(bottom - 4, top + dy);
+          props.ry = (bottom - newTop) / 2;
+          props.cy = newTop + props.ry;
         }
       } else if (init.type === 'line') {
-        if (handle === 'tl') { props.x1 = init.x1 + dx; props.y1 = init.y1 + dy; }
-        if (handle === 'br') { props.x2 = init.x2 + dx; props.y2 = init.y2 + dy; }
+        if (handle === 'tl') {
+          props.x1 = init.x1 + dx;
+          props.y1 = init.y1 + dy;
+        } else if (handle === 'br') {
+          props.x2 = init.x2 + dx;
+          props.y2 = init.y2 + dy;
+        }
+      } else if (init.type === 'path') {
+        const initBox = getBoundingBox(init);
+        let newX = initBox.x;
+        let newY = initBox.y;
+        let newW = initBox.w;
+        let newH = initBox.h;
+
+        // X-axis adjustments
+        if (handle === 'r' || handle === 'tr' || handle === 'br') {
+          newW = Math.max(4, initBox.w + dx);
+        } else if (handle === 'l' || handle === 'tl' || handle === 'bl') {
+          newX = initBox.x + dx;
+          newW = Math.max(4, initBox.w - dx);
+        }
+
+        // Y-axis adjustments
+        if (handle === 'b' || handle === 'bl' || handle === 'br') {
+          newH = Math.max(4, initBox.h + dy);
+        } else if (handle === 't' || handle === 'tl' || handle === 'tr') {
+          newY = initBox.y + dy;
+          newH = Math.max(4, initBox.h - dy);
+        }
+
+        props.points = init.points.map(pt => {
+          const ratioX = (pt.x - initBox.x) / initBox.w;
+          const ratioY = (pt.y - initBox.y) / initBox.h;
+          const newPt: any = {
+            x: newX + ratioX * newW,
+            y: newY + ratioY * newH
+          };
+
+          if (pt.cp1x !== undefined && pt.cp1y !== undefined) {
+            const ratioCp1x = (pt.cp1x - initBox.x) / initBox.w;
+            const ratioCp1y = (pt.cp1y - initBox.y) / initBox.h;
+            newPt.cp1x = newX + ratioCp1x * newW;
+            newPt.cp1y = newY + ratioCp1y * newH;
+          }
+          if (pt.cp2x !== undefined && pt.cp2y !== undefined) {
+            const ratioCp2x = (pt.cp2x - initBox.x) / initBox.w;
+            const ratioCp2y = (pt.cp2y - initBox.y) / initBox.h;
+            newPt.cp2x = newX + ratioCp2x * newW;
+            newPt.cp2y = newY + ratioCp2y * newH;
+          }
+
+          return newPt;
+        });
       }
 
       updateObjectsInDocumentTemp({ [init.id]: props });

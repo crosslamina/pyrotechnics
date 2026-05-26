@@ -349,6 +349,29 @@ function drawTransformHandles(ctx: CanvasRenderingContext2D, obj: CanvasObject, 
 
   const box = getBoundingBox(obj);
   
+  if (obj.type === 'line') {
+    // selection line highlight directly over the actual line segment
+    ctx.beginPath();
+    ctx.moveTo(obj.x1, obj.y1);
+    ctx.lineTo(obj.x2, obj.y2);
+    ctx.stroke();
+
+    const hs = 6 / zoom; // Handle size
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineWidth = 1 / zoom;
+
+    // Draw handles exactly at (x1, y1) and (x2, y2)
+    ctx.fillRect(obj.x1 - hs/2, obj.y1 - hs/2, hs, hs);
+    ctx.strokeRect(obj.x1 - hs/2, obj.y1 - hs/2, hs, hs);
+
+    ctx.fillRect(obj.x2 - hs/2, obj.y2 - hs/2, hs, hs);
+    ctx.strokeRect(obj.x2 - hs/2, obj.y2 - hs/2, hs, hs);
+    
+    ctx.restore();
+    return;
+  }
+  
   // 1. Draw bounding box outline
   ctx.strokeRect(box.x, box.y, box.w, box.h);
 
@@ -372,29 +395,27 @@ function drawTransformHandles(ctx: CanvasRenderingContext2D, obj: CanvasObject, 
     ctx.strokeRect(c.x - hs/2, c.y - hs/2, hs, hs);
   });
 
-  // Edge handles for non-lines/non-paths
-  if (obj.type !== 'line' && obj.type !== 'path') {
-    const edges = [
-      { x: box.x + box.w/2, y: box.y }, // t
-      { x: box.x + box.w/2, y: box.y + box.h }, // b
-      { x: box.x, y: box.y + box.h/2 }, // l
-      { x: box.x + box.w, y: box.y + box.h/2 } // r
-    ];
+  // Edge handles
+  const edges = [
+    { x: box.x + box.w/2, y: box.y }, // t
+    { x: box.x + box.w/2, y: box.y + box.h }, // b
+    { x: box.x, y: box.y + box.h/2 }, // l
+    { x: box.x + box.w, y: box.y + box.h/2 } // r
+  ];
 
-    edges.forEach(e => {
-      ctx.fillRect(e.x - hs/2, e.y - hs/2, hs, hs);
-      ctx.strokeRect(e.x - hs/2, e.y - hs/2, hs, hs);
-    });
+  edges.forEach(e => {
+    ctx.fillRect(e.x - hs/2, e.y - hs/2, hs, hs);
+    ctx.strokeRect(e.x - hs/2, e.y - hs/2, hs, hs);
+  });
 
-    // Specific rounded corners handle for rect objects
-    if (obj.type === 'rect') {
-      ctx.fillStyle = '#ffc600'; // Gold handle for corner radius
-      const radHandle = { x: box.x + 16/zoom, y: box.y + 16/zoom };
-      ctx.beginPath();
-      ctx.arc(radHandle.x, radHandle.y, 4/zoom, 0, 2*Math.PI);
-      ctx.fill();
-      ctx.stroke();
-    }
+  // Specific rounded corners handle for rect objects
+  if (obj.type === 'rect') {
+    ctx.fillStyle = '#ffc600'; // Gold handle for corner radius
+    const radHandle = { x: box.x + 16/zoom, y: box.y + 16/zoom };
+    ctx.beginPath();
+    ctx.arc(radHandle.x, radHandle.y, 4/zoom, 0, 2*Math.PI);
+    ctx.fill();
+    ctx.stroke();
   }
 
   ctx.restore();
@@ -504,7 +525,13 @@ export function checkTransformHandles(
   zoom: number
 ): TransformHandle | null {
   const box = getBoundingBox(obj);
-  const tolerance = 10 / zoom; // 10px screen click tolerance
+  const tolerance = 14 / zoom; // 14px screen click tolerance
+
+  if (obj.type === 'line') {
+    if (Math.abs(mouseX - obj.x1) <= tolerance && Math.abs(mouseY - obj.y1) <= tolerance) return 'tl';
+    if (Math.abs(mouseX - obj.x2) <= tolerance && Math.abs(mouseY - obj.y2) <= tolerance) return 'br';
+    return null;
+  }
 
   // Corners
   if (Math.abs(mouseX - box.x) <= tolerance && Math.abs(mouseY - box.y) <= tolerance) return 'tl';
@@ -512,20 +539,18 @@ export function checkTransformHandles(
   if (Math.abs(mouseX - box.x) <= tolerance && Math.abs(mouseY - (box.y + box.h)) <= tolerance) return 'bl';
   if (Math.abs(mouseX - (box.x + box.w)) <= tolerance && Math.abs(mouseY - (box.y + box.h)) <= tolerance) return 'br';
 
-  if (obj.type !== 'line' && obj.type !== 'path') {
-    // Edges
-    if (Math.abs(mouseX - (box.x + box.w / 2)) <= tolerance && Math.abs(mouseY - box.y) <= tolerance) return 't';
-    if (Math.abs(mouseX - (box.x + box.w / 2)) <= tolerance && Math.abs(mouseY - (box.y + box.h)) <= tolerance) return 'b';
-    if (Math.abs(mouseX - box.x) <= tolerance && Math.abs(mouseY - (box.y + box.h / 2)) <= tolerance) return 'l';
-    if (Math.abs(mouseX - (box.x + box.w)) <= tolerance && Math.abs(mouseY - (box.y + box.h / 2)) <= tolerance) return 'r';
+  // Edges
+  if (Math.abs(mouseX - (box.x + box.w / 2)) <= tolerance && Math.abs(mouseY - box.y) <= tolerance) return 't';
+  if (Math.abs(mouseX - (box.x + box.w / 2)) <= tolerance && Math.abs(mouseY - (box.y + box.h)) <= tolerance) return 'b';
+  if (Math.abs(mouseX - box.x) <= tolerance && Math.abs(mouseY - (box.y + box.h / 2)) <= tolerance) return 'l';
+  if (Math.abs(mouseX - (box.x + box.w)) <= tolerance && Math.abs(mouseY - (box.y + box.h / 2)) <= tolerance) return 'r';
 
-    // Corner radius handle for rects
-    if (obj.type === 'rect') {
-      const rxHandleX = box.x + 16 / zoom;
-      const rxHandleY = box.y + 16 / zoom;
-      const dist = Math.sqrt(Math.pow(mouseX - rxHandleX, 2) + Math.pow(mouseY - rxHandleY, 2));
-      if (dist <= 8 / zoom) return 'radius';
-    }
+  // Corner radius handle for rects
+  if (obj.type === 'rect') {
+    const rxHandleX = box.x + 16 / zoom;
+    const rxHandleY = box.y + 16 / zoom;
+    const dist = Math.sqrt(Math.pow(mouseX - rxHandleX, 2) + Math.pow(mouseY - rxHandleY, 2));
+    if (dist <= 8 / zoom) return 'radius';
   }
 
   return null;
