@@ -1517,12 +1517,14 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
                         let foundObj: CanvasObject | null = null;
                         
                         // Remove object from its current layer
-                        state.layers.forEach(l => {
+                        for (const l of state.layers) {
                           const idx = l.objects.findIndex(o => o.id === targetObj.id);
                           if (idx !== -1) {
-                            [foundObj] = l.objects.splice(idx, 1);
+                            foundObj = l.objects[idx];
+                            l.objects.splice(idx, 1);
+                            break;
                           }
-                        });
+                        }
                         
                         // Add to active layer
                         if (foundObj) {

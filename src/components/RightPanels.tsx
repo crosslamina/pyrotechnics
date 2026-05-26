@@ -235,7 +235,7 @@ export const RightPanels: React.FC<RightPanelsProps> = ({
         if (p.id === prev.currentPageId) {
           const states = p.states.map(s => {
             if (s.id === prev.currentStateId) {
-              return { ...s, layers: [newLayer, ...s.layers] }; // Add to top
+              return { ...s, layers: [...s.layers, newLayer] };
             }
             return s;
           });
@@ -431,7 +431,7 @@ export const RightPanels: React.FC<RightPanelsProps> = ({
 
         {!collapsed.layers && activeState && (
           <div className="sidebar-panel-content">
-            {activeState.layers.map(layer => {
+            {[...activeState.layers].reverse().map(layer => {
               const isLayerActive = layer.id === activeLayerId;
               return (
                 <div key={layer.id} style={{ marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '6px' }}>
@@ -484,7 +484,7 @@ export const RightPanels: React.FC<RightPanelsProps> = ({
 
                   {/* Sub-list of objects inside this layer */}
                   <div style={{ paddingLeft: '16px', marginTop: '2px' }}>
-                    {layer.objects.map(obj => {
+                    {[...layer.objects].reverse().map(obj => {
                       const isSelected = selectedObjectIds.includes(obj.id);
                       return (
                         <div
