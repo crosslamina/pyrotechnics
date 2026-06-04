@@ -1,4 +1,4 @@
-# 🎆 Pyrotechnic
+# 🎆 Pyrotechnics
 
 **A browser-based graphic design canvas — the spiritual successor to Adobe Fireworks.**
 
@@ -69,13 +69,13 @@ Open `http://localhost:5173` in your browser.
 
 ## 🤖 Generating Macros with AI
 
-Copy the contents of [`PYROTECHNIC_MACRO_PROMPT.md`](./PYROTECHNIC_MACRO_PROMPT.md) and paste it as a **system prompt** into ChatGPT, Claude, Gemini, or any other AI.
+Copy the contents of [`PYROTECHNICS_MACRO_PROMPT.md`](./PYROTECHNICS_MACRO_PROMPT.md) and paste it as a **system prompt** into ChatGPT, Claude, Gemini, or any other AI.
 
-The AI will generate valid Pyrotechnic macro JSON from plain-language design requests.
+The AI will generate valid Pyrotechnics macro JSON from plain-language design requests.
 
 ### Workflow
 
-1. Paste `PYROTECHNIC_MACRO_PROMPT.md` into your AI as a system prompt
+1. Paste `PYROTECHNICS_MACRO_PROMPT.md` into your AI as a system prompt
 2. Describe what you want: *"A dark navy OGP image with a gold accent line and bold headline"*
 3. The AI outputs a JSON macro
 4. Paste it into the **Macro panel** and click **Run**
@@ -104,7 +104,7 @@ The AI will generate valid Pyrotechnic macro JSON from plain-language design req
 | `add_state` | Add an animation frame |
 | `clear_all_states` | Remove all animation frames |
 
-Full schema and field reference: [`PYROTECHNIC_MACRO_PROMPT.md`](./PYROTECHNIC_MACRO_PROMPT.md)
+Full schema and field reference: [`PYROTECHNICS_MACRO_PROMPT.md`](./PYROTECHNICS_MACRO_PROMPT.md)
 
 ---
 
@@ -147,10 +147,10 @@ src/
 └── utils/
     ├── canvasHelper.ts             # Canvas 2D drawing helpers
     ├── macroRunner.ts              # JSON macro execution engine
-    ├── pyrotechnic_ogp_macro.json  # Built-in OGP sample macro
+    ├── pyrotechnics_ogp_macro.json  # Built-in OGP sample macro
     └── bouncing_ball_macro.json    # Built-in animation sample macro
 
-PYROTECHNIC_MACRO_PROMPT.md        # AI system prompt for macro generation
+PYROTECHNICS_MACRO_PROMPT.md        # AI system prompt for macro generation
 ```
 
 ---
