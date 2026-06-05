@@ -868,3 +868,128 @@ body, html, #root {
   background: rgba(255, 255, 255, 0.08);
   margin: 4px 0;
 }
+
+/* Floating Welcome & Guide Card */
+.welcome-guide-card {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 330px;
+  background: rgba(22, 24, 33, 0.95);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-medium);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+  z-index: 90;
+  animation: slideInGuide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  color: var(--text-primary);
+}
+
+@keyframes slideInGuide {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.guide-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.guide-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.guide-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guide-intro {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.guide-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guide-steps li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.step-badge {
+  width: 20px;
+  height: 20px;
+  background: var(--accent-gold-dim);
+  border: 1px solid var(--accent-gold);
+  color: var(--accent-gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.guide-steps li strong {
+  display: block;
+  font-size: 12px;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.guide-steps li p {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.guide-dismiss-btn {
+  margin-top: 4px;
+  width: 100%;
+  justify-content: center;
+  font-size: 12px;
+  padding: 8px;
+}
+

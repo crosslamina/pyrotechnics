@@ -17,6 +17,8 @@ import { getBoundingBox, drawObject } from './utils/canvasHelper';
 import { parseMacro, runMacro } from './utils/macroRunner';
 import { saveDocument, loadDocument, clearDocument } from './utils/storage';
 
+import ogpMacro from './utils/pyrotechnics_ogp_macro.json';
+
 // Define initial empty document setup
 const createInitialDocument = (): Document => {
   const pageId = `page-${Date.now()}`;
@@ -46,12 +48,19 @@ const createInitialDocument = (): Document => {
     ]
   };
 
-  return {
+  const baseDoc: Document = {
     name: 'Untitled Fireworks Project',
     pages: [initialPage],
     currentPageId: pageId,
     currentStateId: stateId
   };
+
+  try {
+    return runMacro(ogpMacro as any, baseDoc);
+  } catch (e) {
+    console.error('Failed to run initial OGP macro:', e);
+    return baseDoc;
+  }
 };
 
 export default function App() {
@@ -60,6 +69,15 @@ export default function App() {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const saveTimerRef = useRef<number | null>(null);
   const [activeTool, setActiveTool] = useState<ToolType>('pointer');
+  
+  const [showGuide, setShowGuide] = useState<boolean>(false);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('pyrotechnics_guide_dismissed');
+    if (!dismissed) {
+      setShowGuide(true);
+    }
+  }, []);
 
   const activePage = doc.pages.find(p => p.id === doc.currentPageId) || doc.pages[0];
   const activeState = activePage?.states.find(s => s.id === doc.currentStateId) || activePage?.states[0];
@@ -1247,6 +1265,65 @@ export default function App() {
             <div className="animation-banner">
               <Sparkles size={14} className="text-gold" style={{ color: 'var(--accent-gold)' }} />
               <span style={{ fontSize: '12px', fontWeight: 500 }}>Playing Animation Frame Loop (Preview Mode)</span>
+            </div>
+          )}
+
+          {/* Guide Card (Floating) */}
+          {showGuide && (
+            <div className="welcome-guide-card">
+              <div className="guide-header">
+                <span className="guide-title">
+                  <Sparkles size={14} style={{ color: 'var(--accent-gold)' }} />
+                  Pyrotechnicsへようこそ！
+                </span>
+                <button 
+                  className="guide-close-btn" 
+                  onClick={() => {
+                    setShowGuide(false);
+                    localStorage.setItem('pyrotechnics_guide_dismissed', 'true');
+                  }}
+                  title="ガイドを閉じる"
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="guide-body">
+                <p className="guide-intro">
+                  Vite + Reactで動作するブラウザ型ベクターデザインキャンバスです。使い方がすぐ分かるように、公式OGP画像テンプレートをあらかじめ展開しています！
+                </p>
+                <ul className="guide-steps">
+                  <li>
+                    <span className="step-badge">1</span>
+                    <div>
+                      <strong>クリック＆スタイル編集</strong>
+                      <p>キャンバス上の任意の文字や図形をクリックして動かしたり、画面下部のプロパティパネルで色・透明度・影を変更できます。</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span className="step-badge">2</span>
+                    <div>
+                      <strong>AI JSONマクロの実行</strong>
+                      <p>右側の <strong>Macro Runner</strong> パネルから、AIが生成したデザインJSONコードを実行して自動描画できます。</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span className="step-badge">3</span>
+                    <div>
+                      <strong>スライスの書き出し</strong>
+                      <p>ツールバーの <strong>Slice Tool (Y)</strong> で書き出したい領域を囲み、右側パネルから個別にPNG/JPEG/SVGとして出力できます。</p>
+                    </div>
+                  </li>
+                </ul>
+                <button 
+                  className="btn-primary guide-dismiss-btn"
+                  onClick={() => {
+                    setShowGuide(false);
+                    localStorage.setItem('pyrotechnics_guide_dismissed', 'true');
+                  }}
+                >
+                  はじめる！
+                </button>
+              </div>
             </div>
           )}
 
