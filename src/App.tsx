@@ -19,8 +19,8 @@ import { saveDocument, loadDocument, clearDocument } from './utils/storage';
 
 import ogpMacro from './utils/pyrotechnics_ogp_macro.json';
 
-// Define initial empty document setup
-const createInitialDocument = (): Document => {
+// Define initial empty document setup (blank)
+const createBlankDocument = (): Document => {
   const pageId = `page-${Date.now()}`;
   const stateId = `state-${Date.now()}`;
   const layerId = `layer-${Date.now()}`;
@@ -48,13 +48,17 @@ const createInitialDocument = (): Document => {
     ]
   };
 
-  const baseDoc: Document = {
+  return {
     name: 'Untitled Fireworks Project',
     pages: [initialPage],
     currentPageId: pageId,
     currentStateId: stateId
   };
+};
 
+// Define initial document with preloaded template
+const createInitialDocument = (): Document => {
+  const baseDoc = createBlankDocument();
   try {
     return runMacro(ogpMacro as any, baseDoc);
   } catch (e) {
@@ -170,7 +174,7 @@ export default function App() {
   // Reset Document
   const handleReset = () => {
     if (window.confirm('Are you sure you want to clear the entire project canvas?')) {
-      const freshDoc = createInitialDocument();
+      const freshDoc = createBlankDocument();
       setDoc(freshDoc);
       setHistory([freshDoc]);
       setHistoryIndex(0);
@@ -182,7 +186,7 @@ export default function App() {
   const handleClearSaved = async () => {
     if (window.confirm('Clear saved data from IndexedDB and start fresh?')) {
       await clearDocument();
-      const freshDoc = createInitialDocument();
+      const freshDoc = createBlankDocument();
       setDoc(freshDoc);
       setHistory([freshDoc]);
       setHistoryIndex(0);
