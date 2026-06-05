@@ -1,13 +1,13 @@
 {
   "schema": "1.0",
-  "title": "Pyrotechnic Official OGP Image (with Fireworks)",
-  "description": "Pyrotechnicツール自身で作成する、花火装飾つき公式OGPイメージです。",
+  "title": "Pyrotechnics Official OGP Image (with Fireworks)",
+  "description": "Pyrotechnicsツール自身で作成する、花火装飾つき公式OGPイメージです。",
   "commands": [
     {
       "command": "set_canvas",
       "width": 1200,
       "height": 630,
-      "name": "Pyrotechnic OGP"
+      "name": "Pyrotechnics OGP"
     },
     {
       "command": "clear_canvas"
@@ -20,7 +20,6 @@
       "height": 630,
       "fill": "#05070f"
     },
-    
     {
       "command": "add_ellipse",
       "cx": 300,
@@ -48,33 +47,230 @@
       "fill": "#eab308",
       "opacity": 8
     },
-
-    { "command": "add_line", "x1": 100, "y1": 0, "x2": 100, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 200, "y1": 0, "x2": 200, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 300, "y1": 0, "x2": 300, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 400, "y1": 0, "x2": 400, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 500, "y1": 0, "x2": 500, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 600, "y1": 0, "x2": 600, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 700, "y1": 0, "x2": 700, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 800, "y1": 0, "x2": 800, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 900, "y1": 0, "x2": 900, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 1000, "y1": 0, "x2": 1000, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 1100, "y1": 0, "x2": 1100, "y2": 630, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-
-    { "command": "add_line", "x1": 0, "y1": 100, "x2": 1200, "y2": 100, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 0, "y1": 200, "x2": 1200, "y2": 200, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 0, "y1": 300, "x2": 1200, "y2": 300, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 0, "y1": 400, "x2": 1200, "y2": 400, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 0, "y1": 500, "x2": 1200, "y2": 500, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-    { "command": "add_line", "x1": 0, "y1": 600, "x2": 1200, "y2": 600, "stroke": "#ffffff", "strokeWidth": 1, "opacity": 4 },
-
-    { "command": "add_ellipse", "cx": 300, "cy": 200, "rx": 3, "ry": 3, "fill": "#38bdf8", "opacity": 25 },
-    { "command": "add_ellipse", "cx": 600, "cy": 200, "rx": 3, "ry": 3, "fill": "#38bdf8", "opacity": 25 },
-    { "command": "add_ellipse", "cx": 900, "cy": 200, "rx": 3, "ry": 3, "fill": "#38bdf8", "opacity": 25 },
-    { "command": "add_ellipse", "cx": 300, "cy": 400, "rx": 3, "ry": 3, "fill": "#38bdf8", "opacity": 25 },
-    { "command": "add_ellipse", "cx": 600, "cy": 400, "rx": 3, "ry": 3, "fill": "#38bdf8", "opacity": 25 },
-    { "command": "add_ellipse", "cx": 900, "cy": 400, "rx": 3, "ry": 3, "fill": "#38bdf8", "opacity": 25 },
-
+    {
+      "command": "add_line",
+      "x1": 100,
+      "y1": 0,
+      "x2": 100,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 200,
+      "y1": 0,
+      "x2": 200,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 300,
+      "y1": 0,
+      "x2": 300,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 400,
+      "y1": 0,
+      "x2": 400,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 500,
+      "y1": 0,
+      "x2": 500,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 600,
+      "y1": 0,
+      "x2": 600,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 700,
+      "y1": 0,
+      "x2": 700,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 800,
+      "y1": 0,
+      "x2": 800,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 900,
+      "y1": 0,
+      "x2": 900,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 1000,
+      "y1": 0,
+      "x2": 1000,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 1100,
+      "y1": 0,
+      "x2": 1100,
+      "y2": 630,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 0,
+      "y1": 100,
+      "x2": 1200,
+      "y2": 100,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 0,
+      "y1": 200,
+      "x2": 1200,
+      "y2": 200,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 0,
+      "y1": 300,
+      "x2": 1200,
+      "y2": 300,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 0,
+      "y1": 400,
+      "x2": 1200,
+      "y2": 400,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 0,
+      "y1": 500,
+      "x2": 1200,
+      "y2": 500,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_line",
+      "x1": 0,
+      "y1": 600,
+      "x2": 1200,
+      "y2": 600,
+      "stroke": "#ffffff",
+      "strokeWidth": 1,
+      "opacity": 4
+    },
+    {
+      "command": "add_ellipse",
+      "cx": 300,
+      "cy": 200,
+      "rx": 3,
+      "ry": 3,
+      "fill": "#38bdf8",
+      "opacity": 25
+    },
+    {
+      "command": "add_ellipse",
+      "cx": 600,
+      "cy": 200,
+      "rx": 3,
+      "ry": 3,
+      "fill": "#38bdf8",
+      "opacity": 25
+    },
+    {
+      "command": "add_ellipse",
+      "cx": 900,
+      "cy": 200,
+      "rx": 3,
+      "ry": 3,
+      "fill": "#38bdf8",
+      "opacity": 25
+    },
+    {
+      "command": "add_ellipse",
+      "cx": 300,
+      "cy": 400,
+      "rx": 3,
+      "ry": 3,
+      "fill": "#38bdf8",
+      "opacity": 25
+    },
+    {
+      "command": "add_ellipse",
+      "cx": 600,
+      "cy": 400,
+      "rx": 3,
+      "ry": 3,
+      "fill": "#38bdf8",
+      "opacity": 25
+    },
+    {
+      "command": "add_ellipse",
+      "cx": 900,
+      "cy": 400,
+      "rx": 3,
+      "ry": 3,
+      "fill": "#38bdf8",
+      "opacity": 25
+    },
     {
       "command": "add_ellipse",
       "cx": 920,
@@ -416,7 +612,6 @@
       "fill": "#fbbf24",
       "opacity": 30
     },
-
     {
       "command": "add_ellipse",
       "cx": 1050,
@@ -704,7 +899,6 @@
       "fill": "#a78bfa",
       "opacity": 30
     },
-
     {
       "command": "add_ellipse",
       "cx": 740,
@@ -938,7 +1132,6 @@
       "fill": "#2dd4bf",
       "opacity": 30
     },
-
     {
       "command": "add_rect",
       "x": 30,
@@ -969,7 +1162,7 @@
       "y": 105,
       "width": 800,
       "height": 110,
-      "text": "Pyrotechnic",
+      "text": "Pyrotechnics",
       "fontSize": 96,
       "fontFamily": "Outfit",
       "fontWeight": "bold",
@@ -997,7 +1190,6 @@
       "strokeWidth": 2,
       "opacity": 60
     },
-
     {
       "command": "add_text",
       "x": 80,
@@ -1040,7 +1232,7 @@
       "y": 520,
       "width": 600,
       "height": 35,
-      "text": "Created with Pyrotechnic Canvas Engine",
+      "text": "Created with Pyrotechnics Canvas Engine",
       "fontSize": 16,
       "fontFamily": "Outfit",
       "fontWeight": "normal",
@@ -1052,7 +1244,7 @@
       "y": 518,
       "width": 320,
       "height": 35,
-      "text": "Py • Pyrotechnic",
+      "text": "Py • Pyrotechnics",
       "fontSize": 20,
       "fontFamily": "Outfit",
       "fontWeight": "bold",
@@ -1065,7 +1257,7 @@
       "y": 0,
       "width": 1200,
       "height": 630,
-      "name": "pyrotechnic_ogp",
+      "name": "pyrotechnics_ogp",
       "format": "png"
     }
   ]

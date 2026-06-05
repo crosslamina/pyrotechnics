@@ -1,6 +1,6 @@
 import type { Document } from '../types';
 
-const DB_NAME = 'pyrotechnic_db';
+const DB_NAME = 'pyrotechnics_db';
 const DB_VERSION = 1;
 const STORE_NAME = 'documents';
 const AUTOSAVE_KEY = 'autosave';

@@ -1,5 +1,5 @@
 /**
- * Pyrotechnic Macro Runner
+ * Pyrotechnics Macro Runner
  *
  * Parses and executes JSON macro documents against the current Document state.
  * Designed to be driven by AI-generated JSON (from ChatGPT, Claude, Gemini, etc.)
@@ -134,7 +134,7 @@ export interface ClearAllStatesCommand {
   command: 'clear_all_states';
 }
 
-export interface PyrotechnicMacro {
+export interface PyrotechnicsMacro {
   /** Schema version - must be "1.0" */
   schema: '1.0';
   /** Optional title displayed in the macro runner */
@@ -175,13 +175,13 @@ function clamp(val: number, min: number, max: number): number {
 // ─────────────────────────────────────────────
 
 /**
- * Executes a PyrotechnicMacro against the given Document.
+ * Executes a PyrotechnicsMacro against the given Document.
  *
  * @param macro   - Parsed macro object (already validated)
  * @param doc     - Current document state (immutable reference)
  * @returns       - New document state after all commands applied
  */
-export function runMacro(macro: PyrotechnicMacro, doc: Document): Document {
+export function runMacro(macro: PyrotechnicsMacro, doc: Document): Document {
   // Deep copy to avoid mutating the original
   const result: Document = JSON.parse(JSON.stringify(doc));
 
@@ -401,11 +401,11 @@ export function runMacro(macro: PyrotechnicMacro, doc: Document): Document {
 }
 
 /**
- * Parses and validates a raw JSON string or Base64 encoded string as a PyrotechnicMacro.
+ * Parses and validates a raw JSON string or Base64 encoded string as a PyrotechnicsMacro.
  * Cleans markdown code blocks, comments, trailing commas, and Unicode spaces.
  * Returns the macro or throws a descriptive error.
  */
-export function parseMacro(jsonString: string): PyrotechnicMacro {
+export function parseMacro(jsonString: string): PyrotechnicsMacro {
   let cleaned = jsonString.trim();
 
   // Normalize Unicode spaces (non-breaking spaces, full-width spaces, zero-width spaces)
@@ -489,5 +489,5 @@ export function parseMacro(jsonString: string): PyrotechnicMacro {
     }
   }
 
-  return parsed as PyrotechnicMacro;
+  return parsed as PyrotechnicsMacro;
 }

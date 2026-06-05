@@ -20,7 +20,7 @@ import {
   Upload
 } from 'lucide-react';
 import type { Document, Page, State, Layer, CanvasObject } from '../types';
-import ogpMacro from '../utils/pyrotechnic_ogp_macro.json';
+import ogpMacro from '../utils/pyrotechnics_ogp_macro.json';
 import bouncingBallMacro from '../utils/bouncing_ball_macro.json';
 
 interface RightPanelsProps {
@@ -719,7 +719,7 @@ function documentToMacro(doc: Document): object {
   return {
     schema: '1.0',
     title: page.name,
-    description: `Exported from Pyrotechnic — ${new Date().toISOString().slice(0, 10)}`,
+    description: `Exported from Pyrotechnics — ${new Date().toISOString().slice(0, 10)}`,
     commands,
   };
 }
