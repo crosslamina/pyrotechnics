@@ -499,10 +499,51 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
 
     // 4. SHAPE / BOX CREATION
     if (['rect', 'ellipse', 'line', 'arrow', 'slice'].includes(activeTool)) {
+      let sx = coords.x;
+      let sy = coords.y;
+      if (activeTool === 'slice') {
+        const snapThreshold = 8;
+        const otherObjects = getActiveObjects(doc);
+        let bestDiffX = snapThreshold;
+        let bestDiffY = snapThreshold;
+        let snappedX = sx;
+        let snappedY = sy;
+
+        otherObjects.forEach(obj => {
+          if (obj.type === 'slice') return;
+          const box = getBoundingBox(obj);
+          const edgesX = [box.x, box.x + box.w];
+          const edgesY = [box.y, box.y + box.h];
+
+          edgesX.forEach(ex => {
+            const diff = Math.abs(sx - ex);
+            if (diff < bestDiffX) {
+              bestDiffX = diff;
+              snappedX = ex;
+            }
+          });
+
+          edgesY.forEach(ey => {
+            const diff = Math.abs(sy - ey);
+            if (diff < bestDiffY) {
+              bestDiffY = diff;
+              snappedY = ey;
+            }
+          });
+        });
+
+        if (bestDiffX < snapThreshold) {
+          sx = snappedX;
+        }
+        if (bestDiffY < snapThreshold) {
+          sy = snappedY;
+        }
+      }
+
       setEditMode({
         type: 'creating_shape',
-        startX: coords.x,
-        startY: coords.y
+        startX: sx,
+        startY: sy
       });
       return;
     }
@@ -656,9 +697,97 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
     // 3. VECTOR RESIZING / TRANSFORMING
     if (editMode.type === 'transforming') {
       const handle = editMode.handle;
-      const dx = coords.x - editMode.startX;
-      const dy = coords.y - editMode.startY;
+      let dx = coords.x - editMode.startX;
+      let dy = coords.y - editMode.startY;
       const init = editMode.initialObjectState;
+
+      if (init.type === 'slice') {
+        const snapThreshold = 8;
+        const otherObjects = getActiveObjects(doc).filter(o => o.id !== init.id);
+
+        let snapX: number | undefined;
+        let snapY: number | undefined;
+
+        // Check horizontal snap (left/right edges)
+        if (handle === 'l' || handle === 'tl' || handle === 'bl') {
+          let bestDiffX = snapThreshold;
+          let bestSnapX = init.x + dx;
+          otherObjects.forEach(obj => {
+            const box = getBoundingBox(obj);
+            [box.x, box.x + box.w].forEach(ex => {
+              const diff = Math.abs((init.x + dx) - ex);
+              if (diff < bestDiffX) {
+                bestDiffX = diff;
+                bestSnapX = ex;
+              }
+            });
+          });
+          if (bestDiffX < snapThreshold) {
+            dx = bestSnapX - init.x;
+            snapX = bestSnapX;
+          }
+        } else if (handle === 'r' || handle === 'tr' || handle === 'br') {
+          let bestDiffX = snapThreshold;
+          let bestSnapX = init.x + init.width + dx;
+          otherObjects.forEach(obj => {
+            const box = getBoundingBox(obj);
+            [box.x, box.x + box.w].forEach(ex => {
+              const diff = Math.abs((init.x + init.width + dx) - ex);
+              if (diff < bestDiffX) {
+                bestDiffX = diff;
+                bestSnapX = ex;
+              }
+            });
+          });
+          if (bestDiffX < snapThreshold) {
+            dx = bestSnapX - (init.x + init.width);
+            snapX = bestSnapX;
+          }
+        }
+
+        // Check vertical snap (top/bottom edges)
+        if (handle === 't' || handle === 'tl' || handle === 'tr') {
+          let bestDiffY = snapThreshold;
+          let bestSnapY = init.y + dy;
+          otherObjects.forEach(obj => {
+            const box = getBoundingBox(obj);
+            [box.y, box.y + box.h].forEach(ey => {
+              const diff = Math.abs((init.y + dy) - ey);
+              if (diff < bestDiffY) {
+                bestDiffY = diff;
+                bestSnapY = ey;
+              }
+            });
+          });
+          if (bestDiffY < snapThreshold) {
+            dy = bestSnapY - init.y;
+            snapY = bestSnapY;
+          }
+        } else if (handle === 'b' || handle === 'bl' || handle === 'br') {
+          let bestDiffY = snapThreshold;
+          let bestSnapY = init.y + init.height + dy;
+          otherObjects.forEach(obj => {
+            const box = getBoundingBox(obj);
+            [box.y, box.y + box.h].forEach(ey => {
+              const diff = Math.abs((init.y + init.height + dy) - ey);
+              if (diff < bestDiffY) {
+                bestDiffY = diff;
+                bestSnapY = ey;
+              }
+            });
+          });
+          if (bestDiffY < snapThreshold) {
+            dy = bestSnapY - (init.y + init.height);
+            snapY = bestSnapY;
+          }
+        }
+
+        if (snapX !== undefined || snapY !== undefined) {
+          setSmartGuides({ x: snapX, y: snapY });
+        } else {
+          setSmartGuides(null);
+        }
+      }
 
       const props: any = {};
 
@@ -1254,6 +1383,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
       }
 
       setEditMode({ type: 'idle' });
+      setSmartGuides(null);
     }
   };
 
