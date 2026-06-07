@@ -13,11 +13,18 @@ import { Toolbar } from './components/Toolbar';
 import { CanvasArea } from './components/CanvasArea';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { RightPanels } from './components/RightPanels';
-import { getBoundingBox, drawObject } from './utils/canvasHelper';
+import { getBoundingBox, drawObject, bitmapCanvasCache } from './utils/canvasHelper';
 import { parseMacro, runMacro } from './utils/macroRunner';
 import { saveDocument, loadDocument, clearDocument } from './utils/storage';
 
 import ogpMacro from './utils/pyrotechnics_ogp_macro.json';
+
+// Helper to invalidate cached offscreen canvases on history loads/resets
+const clearBitmapCache = () => {
+  Object.keys(bitmapCanvasCache).forEach(key => {
+    delete bitmapCanvasCache[key];
+  });
+};
 
 // Define initial empty document setup (blank)
 const createBlankDocument = (): Document => {
@@ -157,6 +164,7 @@ export default function App() {
     if (historyIndex > 0) {
       const idx = historyIndex - 1;
       setHistoryIndex(idx);
+      clearBitmapCache();
       setDoc(JSON.parse(JSON.stringify(history[idx])));
       setSelectedObjectIds([]);
     }
@@ -166,6 +174,7 @@ export default function App() {
     if (historyIndex < history.length - 1) {
       const idx = historyIndex + 1;
       setHistoryIndex(idx);
+      clearBitmapCache();
       setDoc(JSON.parse(JSON.stringify(history[idx])));
       setSelectedObjectIds([]);
     }
@@ -175,6 +184,7 @@ export default function App() {
   const handleReset = () => {
     if (window.confirm('Are you sure you want to clear the entire project canvas?')) {
       const freshDoc = createBlankDocument();
+      clearBitmapCache();
       setDoc(freshDoc);
       setHistory([freshDoc]);
       setHistoryIndex(0);
@@ -187,6 +197,7 @@ export default function App() {
     if (window.confirm('Clear saved data from IndexedDB and start fresh?')) {
       await clearDocument();
       const freshDoc = createBlankDocument();
+      clearBitmapCache();
       setDoc(freshDoc);
       setHistory([freshDoc]);
       setHistoryIndex(0);
@@ -199,6 +210,7 @@ export default function App() {
   useEffect(() => {
     loadDocument().then((saved) => {
       if (saved) {
+        clearBitmapCache();
         setDoc(saved);
         setHistory([saved]);
         setHistoryIndex(0);
@@ -725,6 +737,7 @@ export default function App() {
     try {
       const macro = parseMacro(jsonString);
       const newDoc = runMacro(macro, doc);
+      clearBitmapCache();
       setDoc(newDoc);
       pushHistory(newDoc);
       return {

@@ -1347,7 +1347,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [tempPoints, activeTool]);
+  }, [tempPoints, activeTool, strokeColor, doc]);
 
   // Spacebar key panning listeners
   useEffect(() => {
