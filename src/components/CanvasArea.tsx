@@ -233,7 +233,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
       ctx.restore();
     }
 
-  }, [doc, zoom, offset, selectedObjectIds, activeTool, tempPoints, smartGuides, renderCount, previewAnimationStateId, textEditState, editMode]);
+  }, [doc, zoom, offset, selectedObjectIds, activeTool, tempPoints, smartGuides, renderCount, previewAnimationStateId, textEditState, editMode, showSlicesOverlay]);
 
   // Convert mouse screen coordinates to canvas workspace coordinates
   const getCanvasCoords = (e: React.MouseEvent) => {
@@ -1087,7 +1087,7 @@ export const CanvasArea: React.FC<CanvasAreaProps> = ({
       if (w > 0.5 || h > 0.5) { // Only select if drag is non-trivial
         const activeObjs = getActiveObjects(doc);
         activeObjs.forEach(obj => {
-          if (obj.type === 'slice' && lockSlicesOverlay) return; // Skip locked slices
+          if (obj.type === 'slice' && (lockSlicesOverlay || !showSlicesOverlay)) return; // Skip locked or hidden slices
           const objBox = getBoundingBox(obj);
           const intersects = 
             x < objBox.x + objBox.w &&
